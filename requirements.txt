@@ -1,0 +1,6 @@
+git+https://github.com/Rapptz/discord.py
+python-dotenv
+jishaku
+asyncpg
+beautifulsoup4
+youtube-dl 

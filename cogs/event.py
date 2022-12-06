@@ -1,16 +1,30 @@
 import discord
 from discord.ext import commands
-import re
+import json
 import traceback
 import sys
+import tagformatter
+
+parser = tagformatter.Parser()
+@parser.tag("user")
+def member(env):
+    return env.user.mention
+
+@parser.tag("member_count")
+def member_count(env):
+    return env.guild.member_count
+
+@parser.tag("guild")
+def guild(env):
+    return env.guild.name
 
 class Event(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.count = {}
     
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    @commands.Cog.listener('on_command_error')
+    async def error(self, ctx, error):
 
         if hasattr(ctx.command, 'on_error'):
             return
@@ -44,8 +58,8 @@ class Event(commands.Cog):
             print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-    @commands.Cog.listener()
-    async def on_presence_update(self, before: discord.Member, after: discord.Member) -> None:
+    @commands.Cog.listener('on_presence_update')
+    async def vanity(self, before: discord.Member, after: discord.Member) -> None:
         vanity = ['gg/velle', '.gg/velle', '/velle']
         after_status: discord.CustomActivity = discord.utils.find(lambda a: isinstance(a, discord.CustomActivity), after.activities) 
         before_status: discord.CustomActivity = discord.utils.find(lambda a: isinstance(a, discord.CustomActivity), before.activities) 
@@ -74,25 +88,26 @@ class Event(commands.Cog):
 
         if not after_vanity_in_status and does_user_have_role:
             after.status in (discord.Status.dnd, discord.Status.online, discord.Status.idle)
-            await after.remove_roles(discord.Object(1046497852223926457))
+            await after.remove_roles(discord.Object(1046497852223926457))         
 
-    @commands.Cog.listener()
-    async def on_member_update(self, before, after):
-        booster_role = after.guild.get_role(1046479597736300555)
-        booster_channel = self.get_channel(1046480597951983616)
-        if booster_role in after.member.roles:
-            await booster_channel.send(f'{after.mention} W boost !!')
-        else:
-            return
-
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
+    @commands.Cog.listener('on_member_join')
+    async def welcome(self, member):
         gen = self.bot.get_channel(1045853816320430143)
         if member.bot:
             return
         else:
-            await gen.send(f'{member.mention} welc !!')
+            parsing = ['title', 'description']
+            with open('embed.json', "r") as outfile:
+                data = json.load(outfile)
+                for p in parsing:
+                    try:
+                        parsed = parser.parse(data[p], env={"user": member, "guild": member.guild})
+                        data[p] = parsed
+                    except:
+                        pass
+                footer = parser.parse(data['footer']['text'], env={"user": member, "guild": member.guild})
+                data['footer']['text'] = footer
+                await gen.send(f'{member.mention}', embed=discord.Embed.from_dict(data))
 
 async def setup(bot):
     await bot.add_cog(Event(bot))

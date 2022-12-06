@@ -4,3 +4,4 @@ jishaku
 asyncpg
 beautifulsoup4
 youtube-dl 
+tag-formatter

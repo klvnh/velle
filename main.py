@@ -21,7 +21,7 @@ class Bot(commands.Bot):
                         case_insensitive = True, 
                         trip_after_prefix=True,
                         intents=discord.Intents.all(), 
-                        owner_ids = [675104167345258506, 787707616205340702, 815973091208986705])
+                        owner_ids = [675104167345258506, 787707616205340702])
 
     async def setup_hook(self):
         self.session = aiohttp.ClientSession()

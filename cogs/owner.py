@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import traceback
+import json
 
 class Owner(commands.Cog):
     def __init__(self, bot):
@@ -59,6 +60,112 @@ class Owner(commands.Cog):
         vanity_url = await ctx.guild.vanity_invite()
         uses = vanity_url.uses
         await ctx.reply(f'The vanity code: ``discord.gg/{vanity_url.code}`` has {uses} invites!', mention_author=False)
+
+    @commands.hybrid_command()
+    async def create_embed(self, ctx):
+        embed = discord.Embed(title='Default', description='Default response.')
+        with open("embed.json", "w") as outfile:
+            json.dump(embed.to_dict(), outfile)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command()
+    async def create_embed(self, ctx):
+        embed = discord.Embed(title='Default', description='Defautlt response.')
+        with open('embed.json', 'w') as outfile:
+            data = json.load(outfile)
+            json.dump(data, outfile)
+            await ctx.send(embed=embed)
+
+    @commands.hybrid_command()
+    async def show_embed(self, ctx):
+        with open('embed.json', "r") as outfile:
+            data = json.load(outfile)
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @commands.hybrid_group()
+    async def embed_edit(self, ctx):
+        await ctx.reply("A place holder since discord slash commands can't run this!", mention_author=False)
+
+    @embed_edit.command()
+    async def title(self, ctx, *, title):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['title'] = title
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @embed_edit.command()
+    async def description(self, ctx, *, description):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['description'] = description
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @embed_edit.command()
+    async def image(self, ctx, *, url : str):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['image'] = {'url': url}
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @embed_edit.command()
+    async def thumbnail(self, ctx, *, url : str):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['thumbnail'] = {'url': url}
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @embed_edit.command()
+    async def color(self, ctx, *, color : int):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['color'] = color
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @embed_edit.command()
+    async def footer_text(self, ctx, *, text):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['footer'] = {'text': text}
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @embed_edit.command()
+    async def footer_icon(self, ctx, *, icon_url):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data['footer'] = {'icon_url': icon_url}
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+
+    @commands.hybrid_command()
+    async def embed_remove(self, ctx, part):
+        with open('embed.json', "r+") as outfile:
+            data = json.load(outfile)
+            data.pop(part)
+            outfile.seek(0)
+            json.dump(data, outfile)
+            outfile.truncate()
+        await ctx.send(embed=discord.Embed.from_dict(data))
+    
     
 async def setup(bot):
     await bot.add_cog(Owner(bot))
